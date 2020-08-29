@@ -3,8 +3,10 @@ This program should work out of box!
 TODO: 
 
 
-encryption (duh)
+encryption (duh) DONE.
 
 better arguments
 
 Some way to transmit filename?
+
+Some way to detect if connection was rejected or not...
