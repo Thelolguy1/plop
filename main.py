@@ -1,12 +1,12 @@
 import socket
 import sys
 import ipaddress
-import os
 import argparse
-
 import string
 import random
 import hashlib
+import publicip
+from simplecrypt import encrypt, decrypt
 
 # My attempt at non-urine coding.
 
@@ -23,6 +23,7 @@ parser.add_argument('-p', help='Connection Password', required='-client' in sys.
 args = parser.parse_args(args=None if sys.argv[1:] else ['--help'])
 
 if args.host:
+    # HOST MODE
     hash = hashlib.sha512()
     letters = string.ascii_letters
     random_pass = (''.join(random.choice(letters) for i in range(11)))
@@ -36,6 +37,7 @@ if args.host:
         host_ip = socket.gethostbyname(host_name)
         with open(args.file, 'rb') as file:
             sending = file.read()
+            cipherfile = encrypt(hashed_random, sending)
             # Open the file in binary mode
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         print("Attempting to bind to socket...")
@@ -43,8 +45,11 @@ if args.host:
 
             s.bind((host_ip, 50000))
             s.listen(1)
+
             print("Success!")
-            print("Details for client:\n", "Host: ", host_ip, "\nPort: 50000", "Password: ", random_pass)
+            print("Details for client:\n", "Local: ", host_ip, "\nPort: 50000", "Password: ", random_pass)
+            print("Public IP: ")
+            publicip.get()  # why can't this module just work in a variable?????
             print("Waiting for connections...")
             while True:
                 c, addr = s.accept()
@@ -55,7 +60,8 @@ if args.host:
                 if stringdata == hex_dig:
                     print("Pass Accepted.")
                     print("Sending.....")
-                    c.sendall(sending)
+
+                    c.sendall(cipherfile)
                     print("Send Completed!")
                     c.shutdown(socket.SHUT_RDWR)
                     c.close()
@@ -78,6 +84,7 @@ if args.host:
         print("File not Found!")
 
 if args.client:
+    # CLIENT MODE
     try:
         ipaddress.ip_address(args.ip)
         print("Creating Socket")
@@ -95,13 +102,15 @@ if args.client:
             print("Created New File!")
             while True:
                 print('Receiving Data...')
-                data = conn.recv(1024)
+                data = conn.recv(4096)
                 if not data:
                     break
-                f.write(data)
+
+                decrypted = decrypt(encoded, data)
+                f.write(decrypted)
             f.close()
 
-            print("Wrote data!")
+            print("Complete.")
             conn.shutdown(socket.SHUT_RDWR)
             conn.close()
             sys.exit(0)
