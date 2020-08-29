@@ -52,7 +52,7 @@ if args.host:
                 pass_recv = c.recv(2048)
                 stringdata = pass_recv
 
-                if stringdata == hex_dig:  # REMOVE BEFORE DEPLOY
+                if stringdata == hex_dig:
                     print("Pass Accepted.")
                     print("Sending.....")
                     c.sendall(sending)
@@ -65,8 +65,6 @@ if args.host:
                     c.shutdown(socket.SHUT_RDWR)
                     c.close()
                     file.close()
-                    print("LOCAL HASH: ", )  # REMOVE BEFORE DEPLOY
-                    print(pass_recv)  # REMOVE BEFORE DEPLOY
                     print("Client pass failed!")
 
         except socket.error:
@@ -92,7 +90,7 @@ if args.client:
         hash.update(encoded)
         hex_dig = hash.digest()
         conn.send(hash.digest())
-        print(hash.digest()) # REMOVE BEFORE DEPLOY
+
         with open(args.file, 'wb') as f:
             print("Created New File!")
             while True:
@@ -102,7 +100,7 @@ if args.client:
                     break
                 f.write(data)
             f.close()
-            print(data)  # REMOVE BEFORE DEPLOY
+
             print("Wrote data!")
             conn.shutdown(socket.SHUT_RDWR)
             conn.close()
