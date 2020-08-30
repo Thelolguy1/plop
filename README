@@ -1,4 +1,6 @@
-This program should work out of box! 
+This program should work out of box!
+
+Right now, this plop only works on local networks, unless ports are forwarded.
 
 TODO: 
 
