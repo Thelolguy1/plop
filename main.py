@@ -7,6 +7,7 @@ import random
 import hashlib
 import publicip
 from simplecrypt import encrypt, decrypt
+import upnphandler  # argh need more documentation next time :(
 
 # My attempt at non-urine coding.
 
@@ -23,6 +24,7 @@ parser.add_argument('-port', help='Remote or local port.', type=int, default=500
 # GLOBAL ARG
 
 args = parser.parse_args(args=None if sys.argv[1:] else ['--help'])
+
 
 if args.host:
     # HOST MODE
@@ -49,7 +51,12 @@ if args.host:
             s.bind(('', args.port))
             s.listen(1)
 
-            print("Success!")
+            print("Socket Bind Success! Now attempting to open ports...")
+            upnp_open = upnphandler.open_port(args.port)
+            if upnp_open is not True:
+                print("UPNP Opening failure!")
+                sys.exit(1)
+            print("UPNP Success!")
             print("Details:\n", "Local Host: ", ip_address, "\nPort: ", args.port, "Password: ", random_pass)
             print("Public IP: ")
             publicip.get()  # why can't this module just work in a variable?????
@@ -69,6 +76,10 @@ if args.host:
                     c.shutdown(socket.SHUT_RDWR)
                     c.close()
                     file.close()
+                    upnp_close = upnphandler.close_port(args.port)
+                    if not upnp_close:
+                        print("UPNP Close failed!")
+                        sys.exit(1)
                     sys.exit(0)
                 else:
                     c.shutdown(socket.SHUT_RDWR)
@@ -81,6 +92,10 @@ if args.host:
             sys.exit(1)
 
         except KeyboardInterrupt:
+            upnp_close = upnphandler.close_port(args.port)
+            if not upnp_close:
+                print("UPNP Close failed!")
+                sys.exit(1)
             sys.exit(0)
 
     except FileNotFoundError:
@@ -98,6 +113,12 @@ if args.client:
         conn = socket.socket()
         conn.connect((args.ip, args.port))
         print("Creating Socket Success!")
+        print("Attempting to open UPNP...")
+        upnp_open = upnphandler.open_port(args.port)
+        if upnp_open is not True:
+            print("UPNP Opening failure!")
+            sys.exit(1)
+        print("UPNP Success!")
         hash = hashlib.sha512()
         drypass = args.password
         encoded = drypass.encode('utf-8')
@@ -110,6 +131,7 @@ if args.client:
             while True:
                 print('Receiving Data...')
                 data = conn.recv(4096)
+
                 if not data:
                     break
 
@@ -120,12 +142,20 @@ if args.client:
             print("Complete.")
             conn.shutdown(socket.SHUT_RDWR)
             conn.close()
+            upnp_close = upnphandler.close_port(args.port)
+            if not upnp_close:
+                print("UPNP Close failed!")
+                sys.exit(1)
             sys.exit(0)
 
     except ValueError:
         print("Invalid IP!")
         sys.exit(1)
     except KeyboardInterrupt:
+        upnp_close = upnphandler.close_port(args.port)
+        if not upnp_close:
+            print("UPNP Close failed!")
+            sys.exit(1)
         sys.exit(0)
     except BrokenPipeError:
         print("Remote host disconnected!")
