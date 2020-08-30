@@ -1,0 +1,11 @@
+This program should work out of box! 
+
+TODO: 
+
+better arguments
+
+Some way to transmit filename?
+
+Some way to detect if connection was rejected or not...
+
+Crypto error handling.
