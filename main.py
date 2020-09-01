@@ -43,7 +43,7 @@ if args.host:
             sending = file.read()
             cipherfile = encrypt(hashed_random, sending)
             # Open the file in binary mode
-        s = socket.socket()
+        s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
         print("Attempting to bind to socket...")
         try:
             hostname = socket.gethostname()
@@ -64,14 +64,15 @@ if args.host:
             while True:
                 c, addr = s.accept()
                 print("Got connection from", addr)
-                pass_recv = c.recv(2048)
+                pass_recv = c.recv(4096)
                 stringdata = pass_recv
 
                 if stringdata == hex_dig:
                     print("Pass Accepted.")
                     print("Sending.....")
 
-                    c.sendall(cipherfile)
+
+                    c.send(cipherfile)
                     print("Send Completed!")
                     c.shutdown(socket.SHUT_RDWR)
                     c.close()
@@ -110,7 +111,7 @@ if args.client:
     try:
         ipaddress.ip_address(args.ip)
         print("Creating Socket")
-        conn = socket.socket()
+        conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         conn.connect((args.ip, args.port))
         print("Creating Socket Success!")
         print("Attempting to open UPNP...")
@@ -125,18 +126,20 @@ if args.client:
         hash.update(encoded)
         hex_dig = hash.digest()
         conn.send(hash.digest())
-
+        msg = b""
         with open(args.file, 'wb') as f:
             print("Created New File!")
             while True:
                 print('Receiving Data...')
-                data = conn.recv(4096)
+                data = conn.recv(8192)
+
+                msg += data
 
                 if not data:
                     break
 
-                decrypted = decrypt(encoded, data)
-                f.write(decrypted)
+            decrypted = decrypt(encoded, msg)
+            f.write(decrypted)
             f.close()
 
             print("Complete.")
