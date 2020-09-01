@@ -1,0 +1,4 @@
+simple_crypt==4.1.7
+publicip==1.0.1
+miniupnpc==2.0.2
+simplecrypt==0.1.1
