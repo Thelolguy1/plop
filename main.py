@@ -65,7 +65,6 @@ if args.host:
                     print("Pass Accepted.")
                     print("Sending.....")
 
-
                     c.send(cipherfile)
                     print("Send Completed!")
                     c.shutdown(socket.SHUT_RDWR)
@@ -109,8 +108,8 @@ if args.client:
         msg = b""
         with open(args.file, 'wb') as f:
             print("Created New File!")
+            print('Receiving Data...')
             while True:
-                print('Receiving Data...')
                 data = conn.recv(8192)
 
                 msg += data
